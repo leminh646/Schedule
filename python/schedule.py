@@ -45,18 +45,3 @@ class Schedule:
             print(f"\n{day_name}:")
             for shift, employees in day_obj.get_assigned_employees().items():
                 print(f"  {shift.capitalize()}: {', '.join(employees) if employees else 'No employees assigned'}")
-
-if __name__ == "__main__":
-    scheduler = Schedule()
-    scheduler.add_employee("Alice")
-    scheduler.add_employee("Bob")
-    scheduler.add_employee("Charlie")
-
-    scheduler.set_employee_preference("Alice", "Monday", "morning")
-    scheduler.set_employee_preference("Alice", "Tuesday", "afternoon")
-    scheduler.set_employee_preference("Bob", "Monday", "evening")
-    scheduler.set_employee_preference("Charlie", "Monday", "morning")
-    scheduler.set_employee_preference("Charlie", "Tuesday", "evening")
-
-    scheduler.assign_shifts()
-    scheduler.display_schedule()
