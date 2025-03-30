@@ -5,11 +5,11 @@ class Schedule {
     private Map<String, Employee> employees;
 
     public Schedule() {
-        days = new HashMap<>();
+        days = new LinkedHashMap<>();
         employees = new HashMap<>();
 
         String[] dayNames = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
-        for (String day: dayNames) {
+        for (String day : dayNames) {
             days.put(day, new Day(day));
         }
     }
@@ -19,47 +19,62 @@ class Schedule {
     }
 
     public void setEmployeePreference(String name, String day, String shift) {
-        if (employees.containsKey(name) && days.containsKey(day)) {
-            employees.get(name).setPreferences(day, shift);
+        if (!employees.containsKey(name)) {
+            System.out.println("Error: Employee " + name + " does not exist.");
+            return;
         }
+        if (!days.containsKey(day)) {
+            System.out.println("Error: Invalid day " + day);
+            return;
+        }
+        employees.get(name).setPreferences(day, shift);
     }
 
     public void assignShifts() {
         Random random = new Random();
-
-        for (String dayName: days.keySet()) {
+    
+        for (String dayName : days.keySet()) {
             Day dayObj = days.get(dayName);
-            Set<String> assigned = new HashSet<>();
-
+            Set<String> assignedForDay = new HashSet<>();
+    
             for (String shift : dayObj.shifts.keySet()) {
                 List<Employee> available = new ArrayList<>();
-
+    
+                // Find employees who prefer this shift
                 for (Employee emp : employees.values()) {
-                    if (emp.preferences.getOrDefault(dayName, "").equals(shift) && emp.workdays < 5) {
+                    if (emp.preferences.getOrDefault(dayName, "").equals(shift) && emp.workdays < 5 && !assignedForDay.contains(emp.name)) {
                         available.add(emp);
                     }
                 }
+    
+                // Shuffle to randomize selection
                 Collections.shuffle(available);
-
-                while (dayObj.shifts.get(shift).size() < 2){
+    
+                // Assign employees who prefer this shift
+                while (dayObj.shifts.get(shift).size() < 2) {
                     if (!available.isEmpty()) {
                         Employee emp = available.remove(0);
                         dayObj.assignEmployee(shift, emp);
                         emp.workdays++;
-                        assigned.add(emp.name);
+                        assignedForDay.add(emp.name);
                     } else {
+                        // If no preferred employees are available, pick from the remaining pool
                         List<Employee> remaining = new ArrayList<>();
                         for (Employee e : employees.values()) {
-                            if (e.workdays < 5 && !assigned.contains(e.name)) {
+                            if (e.workdays < 5 && !assignedForDay.contains(e.name)) {
                                 remaining.add(e);
                             }
                         }
-
+    
                         if (!remaining.isEmpty()) {
-                            Employee emp = remaining.get(random.nextInt(remaining.size()));
+                            // Prioritize employees with fewer assigned workdays
+                            remaining.sort(Comparator.comparingInt(e -> e.workdays));
+                            Employee emp = remaining.get(0);
                             dayObj.assignEmployee(shift, emp);
                             emp.workdays++;
+                            assignedForDay.add(emp.name);
                         } else {
+                            // No more employees available for this shift
                             break;
                         }
                     }
@@ -67,33 +82,29 @@ class Schedule {
             }
         }
     }
-
+    
     public void displaySchedule() {
-        System.out.println("\nFinal Schedule:");
+        System.out.println("\nFinal Schedule:");    
         for (String dayName : days.keySet()) {
             Day dayObj = days.get(dayName);
             System.out.println("\n" + dayName + ":");
+            
             for (String shift : dayObj.getAssignedEmployees().keySet()) {
-                System.out.println(" " + shift.substring(0, 1).toUpperCase() + shift.substring(1) + ":");
-                System.out.println(String.join(", ", dayObj.getAssignedEmployees().get(shift)));
+                List<String> assignedEmployees = dayObj.getAssignedEmployees().get(shift);
+                System.out.print(" " + Character.toUpperCase(shift.charAt(0)) + shift.substring(1) + ": ");
+    
+                if (assignedEmployees.isEmpty()) {
+                    System.out.println("No employees scheduled");
+                } else {
+                    System.out.println(String.join(", ", assignedEmployees));
+                }
             }
         }
     }
+    
 
-    public static void main(String[] args) {
-        Schedule scheduler = new Schedule();
-        scheduler.addEmployee("Alice");
-        scheduler.addEmployee("Bob");
-        scheduler.addEmployee("Charlie");
-
-        scheduler.setEmployeePreference("Alice", "Monday", "morning");
-        scheduler.setEmployeePreference("Alice", "Tuesday", "afternoon");
-        scheduler.setEmployeePreference("Bob", "Monday", "evening");
-        scheduler.setEmployeePreference("Charlie", "Monday", "morning");
-        scheduler.setEmployeePreference("Charlie", "Tuesday", "evening");
-
-        scheduler.assignShifts();
-        scheduler.displaySchedule();
+    public void run() {
+        assignShifts();
+        displaySchedule();
     }
 }
-
