@@ -21,11 +21,11 @@ This project is a simple employee scheduling system that allows employees to cho
 ### Python Version
 1. Clone the repository:
    ```sh
-   git clone https://github.com/yourusername/employee-scheduling.git
+   git clone https://github.com/leminh646/Schedule
    ```
-2. Navigate to the project directory:
+2. Navigate to the Python directory:
    ```sh
-   cd employee-scheduling
+   cd python
    ```
 3. Run the program:
    ```sh
@@ -35,7 +35,7 @@ This project is a simple employee scheduling system that allows employees to cho
 ### Java Version
 1. Navigate to the Java directory:
    ```sh
-   cd java-version
+   cd java
    ```
 2. Compile the Java files:
    ```sh
